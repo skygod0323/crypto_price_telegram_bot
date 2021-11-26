@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
-import { ApiController } from './api.controller';
-import { ApiService } from './api.service';
+import { TelegramController } from './telegram.controller';
+import { TelegramService } from './telegram.service';
 import { Setting } from './entities/setting.entity';
 
 @Module({
@@ -10,13 +10,13 @@ import { Setting } from './entities/setting.entity';
     TypeOrmModule.forFeature([Setting])
   ],
   controllers: [
-    ApiController
+    TelegramController
   ],
   providers: [
-    ApiService
+    TelegramService,
   ],
   exports: [
-    ApiService
+    TelegramService
   ]
 })
-export class ApiModule {}
+export class TelegramModule {}

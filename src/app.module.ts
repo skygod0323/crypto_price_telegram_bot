@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ApiModule } from './api/api.module';
+import { TelegramModule } from './telegram/telegram.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import * as ormConfig from './ormconfig';
@@ -8,7 +8,7 @@ import * as ormConfig from './ormconfig';
 @Module({
   imports: [
     TypeOrmModule.forRoot(ormConfig),
-    ApiModule
+    TelegramModule
   ],
   controllers: [AppController],
   providers: [AppService],
