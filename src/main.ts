@@ -10,7 +10,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
 
-
   const config = new DocumentBuilder()
     .setTitle('Dreamify API Document')
     .setDescription('This document is for Dreamify APIs')
@@ -30,7 +29,6 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('doc', app, document);
-
 
   await app.listen(3000);
 }

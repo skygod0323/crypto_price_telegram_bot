@@ -10,7 +10,6 @@ import {
 import { Exclude } from 'class-transformer';
 
 export class SoftDelete {
-
   static scope = {
     default: {
       deletedAt: IsNull(),
