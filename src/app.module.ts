@@ -8,12 +8,14 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { TasksService } from './tasks.service';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { ServicesModule } from './services/services.module';
 
 @Module({
   imports: [
     TypeOrmModule.forRoot(ormConfig),
     TelegramModule,
     ScheduleModule.forRoot(),
+    ServicesModule,
   ],
   controllers: [AppController],
   providers: [AppService, TasksService],

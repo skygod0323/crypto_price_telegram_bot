@@ -205,11 +205,8 @@ function drawChart(data, group, showAxis): Promise<string> {
   });
 }
 
-
-
 @Injectable()
 export class TelegramService {
-  
   private readonly logger = new Logger(TelegramService.name);
 
   constructor(
@@ -217,9 +214,7 @@ export class TelegramService {
     private readonly settingRepository: Repository<Setting>,
     @InjectRepository(Token)
     private readonly tokenRepository: Repository<Token>,
-  ) {
-
-  }
+  ) {}
 
   async getSetting(key: string) {
     const value = await this.settingRepository.findOne({ key: key });
@@ -243,7 +238,13 @@ export class TelegramService {
     return this.tokenRepository.save(token);
   }
 
-  async generateImage(network, baseCurrency, quote_currency, group, showAxis = false): Promise<string> {
+  async generateImage(
+    network,
+    baseCurrency,
+    quote_currency,
+    group,
+    showAxis = false,
+  ): Promise<string> {
     const res = await fetchPrices(network, baseCurrency, quote_currency);
     const data = res.data.ethereum.dexTrades;
     return drawChart(data, group, showAxis);
@@ -259,14 +260,14 @@ export class TelegramService {
     const tokens: Token[] = await this.tokenRepository.find({});
     const bsc_key = process.env.BSC_KEY;
     //this.generateImage(network, baseCurrency, tokens[0].address, tokens[0].group);
-    for (let i=0; i<tokens.length; i++) {
-      //this.generateImage(network, baseCurrency, tokens[i].address, tokens[i].group);
+    for (let i = 0; i < tokens.length; i++) {
+      // this.generateImage(network, baseCurrency, tokens[i].address, tokens[i].group);
 
       //get token info
       const tokenInfoUrl = `https://api.bscscan.com/api?module=token&action=tokeninfo&contractaddress=${tokens[i].address}&apikey=${bsc_key}`;
-      const csupplyUrl = `https://api.bscscan.com/api?module=stats&action=tokenCsupply&contractaddress=${tokens[i].address}&apikey=${bsc_key}`
-      let res = await axios.get(tokenInfoUrl);
-      let cRes = await axios.get(csupplyUrl);
+      const csupplyUrl = `https://api.bscscan.com/api?module=stats&action=tokenCsupply&contractaddress=${tokens[i].address}&apikey=${bsc_key}`;
+      const res = await axios.get(tokenInfoUrl);
+      const cRes = await axios.get(csupplyUrl);
       let tokenInfo, csupply;
       if (res.data.status == '1') {
         tokenInfo = res.data.result[0];

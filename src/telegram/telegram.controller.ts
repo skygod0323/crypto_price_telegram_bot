@@ -51,7 +51,12 @@ export class TelegramController {
   @Get('chart')
   async getImage(@Res() response) {
     try {
-      const path = await this.telegramService.generateImage('binance', '0x55d398326f99059ff775485246999027b3197955', '0x7083609fce4d1d8dc0c979aab8c869ea2c873402', true);
+      const path = await this.telegramService.generateImage(
+        'binance',
+        '0x55d398326f99059ff775485246999027b3197955',
+        '0x7083609fce4d1d8dc0c979aab8c869ea2c873402',
+        true,
+      );
       console.log('path = ', path);
       const buffer = fs.readFileSync(path);
       response.writeHead(200, { 'Content-Type': 'image/png' });
