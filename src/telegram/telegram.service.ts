@@ -48,7 +48,6 @@ const client = new ApolloClient({
 });
 
 function fetchPrices(network, baseCurrency, quoteCurrency) {
-  console.log(since());
   const query = gql`{
   ethereum(network: bsc) {
     dexTrades(options: {limit: 300, asc: "timeInterval.minute"}, date: {since: "${since()}"}, exchangeName: {in: ["Pancake", "Pancake v2"]}, baseCurrency: {is: "${baseCurrency}"}, quoteCurrency: {is: "${quoteCurrency}"}) {
@@ -249,10 +248,22 @@ export class TelegramService {
     return drawChart(data, group, showAxis);
   }
 
-  @Cron('*/15 * * * * *')
-  async handleCron() {
-    this.logger.debug('Called every 15 second');
+  async getTokenInfoByGroupId(groupId: string) {
+    let token = await this.tokenRepository.findOne({
+      group: groupId,
+    });
 
+    return token
+  }
+
+  @Cron('*/30 * * * * *')
+  async handleCron() {
+    this.logger.debug('Called every 30 second');
+
+    this.handleFunction();
+  }
+
+  async handleFunction() {
     const baseCurrency = '0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c';
     const network = 'bsc';
 
@@ -260,7 +271,7 @@ export class TelegramService {
     const bsc_key = process.env.BSC_KEY;
     //this.generateImage(network, baseCurrency, tokens[0].address, tokens[0].group);
     for (let i=0; i<tokens.length; i++) {
-      //this.generateImage(network, baseCurrency, tokens[i].address, tokens[i].group);
+      this.generateImage(network, baseCurrency, tokens[i].address, tokens[i].group);
 
       //get token info
       const tokenInfoUrl = `https://api.bscscan.com/api?module=token&action=tokeninfo&contractaddress=${tokens[i].address}&apikey=${bsc_key}`;

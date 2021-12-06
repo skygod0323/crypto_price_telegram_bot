@@ -19,6 +19,16 @@ import * as fs from 'fs';
 import { TelegramService } from './telegram.service';
 import axios from 'axios';
 
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
+const APP_URL = process.env.APP_URL;
+const BSC_KEY = process.env.BSC_KEY;
+
+const formatDate = (d) =>
+  `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+
 @Controller('api/bot')
 @ApiTags('Api')
 @ApiBearerAuth()
@@ -38,34 +48,14 @@ export class TelegramController {
     // const token = await this.telegramService.addToken({network: 'binance_smart_chain', address: '0x7083609fce4d1d8dc0c979aab8c869ea2c873402'});
     // console.log(token);
 
-    const token = await this.telegramService.setToken({
-      group: 'group1',
-      network: 'eth',
-      address: '0x7083609fce4d1d8dc0c979aab8c869ea2c873402',
-    });
-    console.log(token);
-
-    res.end();
-  }
-
-  @Get('chart')
-  async getImage(@Res() response) {
-    try {
-      const path = await this.telegramService.generateImage('binance', '0x55d398326f99059ff775485246999027b3197955', '0x7083609fce4d1d8dc0c979aab8c869ea2c873402', true);
-      console.log('path = ', path);
-      const buffer = fs.readFileSync(path);
-      response.writeHead(200, { 'Content-Type': 'image/png' });
-      response.end(buffer);
-    } catch (e) {
-      response.end();
-    }
+    
   }
 
   @Get('uploads/:fileName')
   image(@Param('fileName') fileName: string, @Res() response) {
     try {
       const buffer = fs.readFileSync(
-        `${__dirname}/../../public/uploads/${fileName}`,
+        `${__dirname}/../../public/uploads/${fileName}.png`,
       );
       response.writeHead(200, { 'Content-Type': 'image/png' });
       response.end(buffer);
@@ -81,8 +71,13 @@ export class TelegramController {
   @ApiOkResponse()
   async telegram_bot_req(@Body() body: any, @Res() res) {
     const msg = body.message.text;
+    const group = body.message.chat.id;
+    console.log(body, group);
+
+    
 
     try {
+      
       if (msg.indexOf('/marco') >= 0) {
         const param = {
           chat_id: body.message.chat.id,
@@ -92,23 +87,61 @@ export class TelegramController {
         await this.sendMessage(param);
 
         return res.end('ok');
+
       } else if (msg.indexOf('/set_token') >= 0) {
+
+        const tokenAddress = msg.substr(11);
+        
+        const token = await this.telegramService.setToken({
+          group: group,
+          network: 'bsc',
+          address: tokenAddress,
+        });
+        console.log(token);
+
         const param = {
           chat_id: body.message.chat.id,
-          text: 'This is token setting message',
+          text: 'Token Successfully Added',
         };
 
-        await this.sendMessage(param);
+        this.telegramService.handleFunction();
 
+        await this.sendMessage(param);
+    
         return res.end('ok');
       } else if (msg.indexOf('/price') >= 0) {
-        console.log(msg);
+
+        const token = await this.telegramService.getTokenInfoByGroupId(group);
+
+        let base_price;
+        if (token.network == 'bsc') {
+          const now = new Date();
+          const apiUrl = `https://api.bscscan.com/api?module=stats&action=bnbprice&apikey=${BSC_KEY}`
+          let res = await axios.get(apiUrl);
+          base_price = res.data.result.ethusd;
+        }
+
+        let market_cap: any = Number(token.price) * Number(token.supply);
+        market_cap = market_cap.toFixed(3);
+
+        const text = `<b><a href="${APP_URL}api/bot/uploads/chart-${group}">price chart</a></b>
+
+Token: <b>${token.name}(${token.symbol})</b>
+Price: <b>$${token.price}</b>
+Total Supply: <b>${token.supply}</b>
+Market Cap: <b>$${market_cap}</b>
+BNB Price: <b>${base_price}</b>
+
+Contract Address: ${token.address}
+                  `;
+
+
+        console.log(text);
         const param = {
           chat_id: body.message.chat.id,
           parse_mode: 'html',
           disable_web_page_preview: false,
-          text: `<a href="https://01ff-188-43-136-33.ngrok.io/api/bot/chart">price</a>
-                  `,
+          text: text,
         };
 
         await this.sendMessage(param);
@@ -127,6 +160,13 @@ export class TelegramController {
   sendMessage(param) {
     return axios.post(
       'https://api.telegram.org/bot2145651894:AAHRFtKUvrFNArD-bmd3xZm_90lKaNN2lAY/sendMessage',
+      param,
+    );
+  }
+
+  sendPhoto(param) {
+    return axios.post(
+      'https://api.telegram.org/bot2145651894:AAHRFtKUvrFNArD-bmd3xZm_90lKaNN2lAY/sendphoto',
       param,
     );
   }
